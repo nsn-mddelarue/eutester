@@ -20,7 +20,7 @@
 # easily added using the TEST_DEPT_POSSIBLE_STUBS variable pointing to
 # a header file stating prototypes for stub functions.
 
-CC=gcc
+CC=gcc -std=gnu99
 
 # The three rows below are only needed if test-dept is not installed
 # in your environment. They refer relatively to the unpacked dist in ../..
@@ -30,13 +30,17 @@ CC=gcc
 # If you use them, please also qualify the last include-file with
 # a prefix, like this: $(TEST_DEPT_INCLUDE_PATH)/test-dept.mk
 
-TEST_DEPT_SRC_DIR=src
+TEST_DEPT_SRC_DIR=../../eucalyptus/cluster
+
 override CPPFLAGS+=-I$(TEST_DEPT_SRC_DIR)
-TEST_SRCS=test/file1_test.c
+override CPPFLAGS+=-I../../eucalyptus/util -I../../eucalyptus/storage -I../../eucalyptus/net -I../../eucalyptus/node -I../../eucalyptus/cluster/generated/ -I/usr/include/axis2-1.6.0/
+TEST_SRCS=scheduler_test.c
 
 check:	test_dept_run
 
 clean:
 	rm -f *.o *_test
+
+scheduler_test: scheduler_test.o
 
 include test-dept.mk
