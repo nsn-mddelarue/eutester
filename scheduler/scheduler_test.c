@@ -66,7 +66,7 @@ void setup_empty_cloud() {
     res->state=RESDOWN;
   }
 
-  for(i=0; i<2; i++) {
+  for(i=0; i<5; i++) {
     /* FIXME: the following should be macros both here and in main code */
     res=&(resourceCache->resources[i]);
     res->state=RESUP;
@@ -74,9 +74,17 @@ void setup_empty_cloud() {
     res->availDisk = 88;
     res->availCores = 8;
   }
-  resourceCache->numResources=2;
+  resourceCache->numResources=6;
 
 }
+
+/* @setup_full_cloud - set config and resource as if the cloud is full
+ * 
+ * This sets up the config and resourceCache global variables to point
+ * to data showing that the cloud is completely full.
+ * 
+ * N.B. the data space required is malloced in this function.  
+ */
 
 void setup_full_cloud() {
   ccResource *res;
@@ -145,7 +153,7 @@ void test_full_cloud_round_robin_scheduler() {
   setup_full_cloud();
   ret=schedule_instance_roundrobin(&vm, &outresid);
 
-  assert_not_equals(ret, 0);
+  assert_not_equals(0, ret);
 
   res=&(resourceCache->resources[0]);
   
@@ -188,11 +196,42 @@ void test_schedule_multiple() {
   setup_empty_cloud();
   config->schedPolicy = SCHEDROUNDROBIN;
 
-  for (i=0; i<6; i++) {
+  for (i=0; i<15; i++) {
     ret=apply_scheduler(&vm, NULL,&outresid);
-    assert_equals(ret, 0);
+    assert_equals(0, ret);
   }
 
+}
+
+/* given that I have a cloud which has empty nodes with capacity for
+ * multiple instances when I repeatedly schedule small instances then 
+ * the scheduling should succeed
+ */ 
+
+void test_schedule_big_after_many_small() {
+  virtualMachine vm;
+  int outresid;
+  int ret,i;
+  ccResource *res;
+
+  vm.mem = 5;
+  vm.disk = 5;
+  vm.cores = 2;
+
+  setup_empty_cloud();
+  config->schedPolicy = SCHEDROUNDROBIN;
+
+  for (i=0; i<15; i++) {
+    ret=apply_scheduler(&vm, NULL,&outresid);
+    assert_equals(0, ret);
+  }
+
+  vm.mem = 5;
+  vm.disk = 5;
+  vm.cores = 4;
+
+  ret=apply_scheduler(&vm, NULL,&outresid);
+  assert_equals(0, ret);
 }
 
 void teardown() {
