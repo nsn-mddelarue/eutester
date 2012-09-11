@@ -74,6 +74,7 @@ void setup_empty_cloud() {
     res->availDisk = 88;
     res->availCores = 8;
   }
+  resourceCache->numResources=2;
 
 }
 
@@ -102,9 +103,9 @@ void setup_full_cloud() {
     res->availDisk = 7;
     res->availCores = 0;
   }
+  resourceCache->numResources=2;
 
 }
-
 
 /* given that I have a cloud which has empty nodes with capacity for
  * an instance when I attempt to schedule an instance with round_robin
@@ -149,6 +150,49 @@ void test_full_cloud_round_robin_scheduler() {
   res=&(resourceCache->resources[0]);
   
   assert_equals(0, outresid);
+}
+
+/*
+ * @apply_scheduler - simulate running the scheduler 
+ * 
+ * 
+ *
+ */
+
+int apply_scheduler(virtualMachine *vm, char *targetNode, int *outresid) { 
+  int ret;
+  ccResource *resource;
+  ret=schedule_instance(vm, targetNode, outresid) ;
+  resource = &(resourceCache->resources[*outresid]);
+  resource->availMemory -= vm->mem;
+  resource->availDisk -= vm->disk;
+  resource->availCores -= vm->cores;
+  return ret;
+}
+  
+/* given that I have a cloud which has empty nodes with capacity for
+ * multiple instances when I repeatedly schedule small instances then 
+ * the scheduling should succeed
+ */ 
+
+void test_schedule_multiple() {
+  virtualMachine vm;
+  int outresid;
+  int ret,i;
+  ccResource *res;
+
+  vm.mem = 5;
+  vm.disk = 5;
+  vm.cores = 2;
+
+  setup_empty_cloud();
+  config->schedPolicy = SCHEDROUNDROBIN;
+
+  for (i=0; i<6; i++) {
+    ret=apply_scheduler(&vm, NULL,&outresid);
+    assert_equals(ret, 0);
+  }
+
 }
 
 void teardown() {
