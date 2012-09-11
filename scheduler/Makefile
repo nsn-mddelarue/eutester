@@ -20,7 +20,7 @@
 # easily added using the TEST_DEPT_POSSIBLE_STUBS variable pointing to
 # a header file stating prototypes for stub functions.
 
-CC=gcc -std=gnu99
+CC=gcc -std=gnu99 -ggdb
 
 # The three rows below are only needed if test-dept is not installed
 # in your environment. They refer relatively to the unpacked dist in ../..
